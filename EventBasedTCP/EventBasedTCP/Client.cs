@@ -56,7 +56,9 @@ namespace EventBasedTCP
 
         public void SendMessage(object content)
         {
-            var outContent = content.ToString();
+            var outContent = content.ToString()
+                .Replace(TcpOptions.EndConnectionCode.ToString(), "")
+                .Replace(TcpOptions.EndMessageCode.ToString(), "");
             outContent += TcpOptions.EndMessageCode.ToString();
             var data = outContent.GetBytes();
             _stream.Write(data, 0, data.Length);
