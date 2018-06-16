@@ -93,6 +93,15 @@ namespace EventBasedTCP
             _stream.Write(data, 0, data.Length);
         }
 
+        private void SendMessage(object content, bool a)
+        {
+            var outContent = content.ToString()
+                .Replace(TcpOptions.EndMessageCode.ToString(), "");
+            outContent += TcpOptions.EndMessageCode.ToString();
+            var data = outContent.GetBytes();
+            _stream.Write(data, 0, data.Length);
+        }
+
         private void ListenForMessages()
         {
             var bytes = new List<byte>();
@@ -156,7 +165,7 @@ namespace EventBasedTCP
                 IsDisposed = true;
                 if (!fromServer)
                 {
-                    SendMessage(TcpOptions.EndConnectionCode.ToString());
+                    SendMessage(TcpOptions.EndConnectionCode.ToString(), true);
                 }
                 _client.Close();
                 _client.Dispose();
