@@ -38,21 +38,30 @@ namespace ChatClient
                     {
                         Console.Write("> ");
                         var input = Console.ReadLine();
-                        
-                        if (input.ToLower().StartsWith("send "))
-                        {
-                            var toSend = input.Substring(5, input.Length - 5);
 
-                            Console.WriteLine("Sending message: \n     " + toSend + "\n");
-                            client.SendMessage(toSend);
-                            Console.WriteLine("Sent message.");
-                        }
-                        else if (input.ToLower() == "stop")
+                        if (client.IsDisposed)
                         {
-                            Console.WriteLine("Disconnecting...");
-                            client.Dispose(false);
-                            Console.WriteLine("Disconnected. Press any key to continue.");
+                            Console.WriteLine("The server closed. This client has disposed. Press any key to close...");
                             Console.ReadLine();
+                        }
+                        else
+                        {
+
+                            if (input.ToLower().StartsWith("send "))
+                            {
+                                var toSend = input.Substring(5, input.Length - 5);
+
+                                Console.WriteLine("Sending message: \n     " + toSend + "\n");
+                                client.SendMessage(toSend);
+                                Console.WriteLine("Sent message.");
+                            }
+                            else if (input.ToLower() == "stop")
+                            {
+                                Console.WriteLine("Disconnecting...");
+                                client.Dispose(false);
+                                Console.WriteLine("Disconnected. Press any key to continue.");
+                                Console.ReadLine();
+                            }
                         }
 
                         Console.WriteLine();
