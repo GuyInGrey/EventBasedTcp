@@ -19,7 +19,7 @@ namespace ConsoleApp1
             server.ClientDisconnected += Server_ClientDisconnected;
 
             Console.WriteLine("Server started.");
-            Console.WriteLine("Listing on IP address: " + server.ListenAddress);
+            Console.WriteLine("Listing on IP address: " + server.Address);
             Console.WriteLine("On port: " + server.Port);
 
             while (!server.IsDisposed)

@@ -11,39 +11,87 @@ namespace EventBasedTCP
         TcpListener _listener;
         Thread _clientListenerThread;
 
-        public List<Client> ConnectedClients { get; set; } = new List<Client>();
+        /// <summary>
+        /// The of all the clients connected to this server.
+        /// </summary>
+        public List<Client> ConnectedClients { get; set; }
 
-        public string ListenAddress { get; }
+        /// <summary>
+        /// The address the server is listening on.
+        /// </summary>
+        public string Address { get; }
+        
+        /// <summary>
+        /// The port the server is listening on.
+        /// </summary>
         public int Port { get; }
 
+        /// <summary>
+        /// Whether the server has been stopped and disposed.
+        /// </summary>
         public bool IsDisposed { get; private set; }
 
+        /// <summary>
+        /// Occurs when a client connects to the server.
+        /// </summary>
         public event EventHandler<ClientToggleEventArgs> ClientConnected;
+
+        /// <summary>
+        /// Occurs when a client disconnected from the server.
+        /// </summary>
         public event EventHandler<ClientToggleEventArgs> ClientDisconnected;
+
+        /// <summary>
+        /// Occurs when any client sends a message to the server.
+        /// </summary>
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
+
+        /// <summary>
+        /// Occurs when the server is disconnected and disposed.
+        /// </summary>
         public event EventHandler Disposed;
+
+        /// <summary>
+        /// Occurs after the server begins listening for clients. At this point, the ConnectedClients list is safe to use.
+        /// </summary>
         public event EventHandler StartedListening;
 
+        /// <summary>
+        /// The tag attached to this object.
+        /// </summary>
         public object Tag { get; set; }
 
+        /// <summary>
+        /// Constructor to instantiate and start the server for listening.
+        /// </summary>
+        /// <param name="address">The IP address the listen on.</param>
+        /// <param name="port">The port to listen on.</param>
         public Server(string address, int port)
         {
             _listener = new TcpListener(IPAddress.Parse(address), port);
             _listener.Start();
 
-            ListenAddress = address;
+            Address = address;
             Port = port;
 
             StartClientListening();
         }
 
+        /// <summary>
+        /// Starts the listening thread for the server. After this, the server has begun listening for connected from clients. 
+        /// Private so that users do not call more than once.
+        /// </summary>
         private void StartClientListening()
         {
+            ConnectedClients = new List<Client>();
             _clientListenerThread = new Thread(ListenForClients);
             _clientListenerThread.Start();
             StartedListening?.Invoke(this, null);
         }
 
+        /// <summary>
+        /// The threaded method where the server listens for client connections. Only called from <see cref="StartClientListening"/>
+        /// </summary>
         private void ListenForClients()
         {
             while (!IsDisposed)
@@ -51,7 +99,7 @@ namespace EventBasedTCP
                 try
                 {
                     var connectedTCPClient = _listener.AcceptTcpClient();
-                    var connectedClient = Client.FromServerClient(connectedTCPClient);
+                    var connectedClient = new Client(connectedTCPClient);
 
                     connectedClient.MessageReceived += ConnectedClient_MessageReceived;
 
@@ -77,6 +125,12 @@ namespace EventBasedTCP
             }
         }
 
+        /// <summary>
+        /// This is the event handler attached to every client that is connected's MessageReceive event.
+        /// This is where it checks if a client has sent the disconnetion code, and if so, disposes of them.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ConnectedClient_MessageReceived(object sender, MessageReceivedEventArgs e)
         {
             if (e.Message == TcpOptions.EndConnectionCode.ToString())
@@ -95,6 +149,10 @@ namespace EventBasedTCP
             }
         }
 
+        /// <summary>
+        /// This disposes the server, also stopping the listening thread, and sending an
+        /// <see cref="TcpOptions.EndConnectionCode"/> to every client connected.
+        /// </summary>
         public void Dispose()
         {
             if (!IsDisposed)
@@ -111,6 +169,11 @@ namespace EventBasedTCP
             }
         }
 
+        /// <summary>
+        /// Returns this machine's intranetwork IPv4 address. 
+        /// Throws an exception if there are no connected network adapters on the system.
+        /// </summary>
+        /// <returns>The IPv4 address of this machine.</returns>
         public static string GetLocalIPAddress()
         {
             var host = Dns.GetHostEntry(Dns.GetHostName());

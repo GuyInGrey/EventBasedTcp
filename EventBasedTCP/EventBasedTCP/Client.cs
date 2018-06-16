@@ -38,7 +38,8 @@ namespace EventBasedTCP
         public event EventHandler StartedListening;
 
         /// <summary>
-        /// Whether this client is a connection client on the server end.
+        /// If this is the client end creating the connected, this is false.
+        /// If this is the client the sever creates on the server end after a client has connected, this is true.
         /// </summary>
         public bool IsServerClient { get; }
 
@@ -52,20 +53,40 @@ namespace EventBasedTCP
         /// </summary>
         public object Tag { get; set; }
         
+        /// <summary>
+        /// The endpoint of the client. If <see cref="IsServerClient"/>, this returns the originating client's IP endpoint. 
+        /// If not true, returns the address of the server.
+        /// </summary>
         public string ConnectAddress => IPAddress.Parse(((IPEndPoint)_client.Client.RemoteEndPoint).Address.ToString()).ToString();
 
-        private Client(TcpClient client)
+        /// <summary>
+        /// The port this client is connected to the server on.
+        /// </summary>
+        public int Port { get; set; }
+        
+        /// <summary>
+        /// If it's server-side.
+        /// </summary>
+        /// <param name="client"></param>
+        public Client(TcpClient client)
         {
             _client = client;
             IsServerClient = true;
+            Port = ((IPEndPoint)client.Client.RemoteEndPoint).Port;
 
             StartListening();
         }
 
+        /// <summary>
+        /// If it's client side.
+        /// </summary>
+        /// <param name="address"></param>
+        /// <param name="port"></param>
         public Client(string address, int port)
         {
             try
             {
+                Port = port;
                 _client = new TcpClient(address, port);
 
                 StartListening();
@@ -76,6 +97,9 @@ namespace EventBasedTCP
             }
         }
 
+        /// <summary>
+        /// Starts the client listening for messages.
+        /// </summary>
         private void StartListening()
         {
             _listenThread = new Thread(ListenForMessages);
@@ -83,6 +107,10 @@ namespace EventBasedTCP
             StartedListening?.Invoke(this, null);
         }
 
+        /// <summary>
+        /// Sends a message to the endpoint of this client.
+        /// </summary>
+        /// <param name="content"></param>
         public void SendMessage(object content)
         {
             var outContent = content.ToString()
@@ -93,6 +121,11 @@ namespace EventBasedTCP
             _stream.Write(data, 0, data.Length);
         }
 
+        /// <summary>
+        /// Sends a message to the endpoint of this client, not replacing a <see cref="TcpOptions.EndConnectionCode"/>.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="a"></param>
         private void SendMessage(object content, bool a)
         {
             var outContent = content.ToString()
@@ -102,6 +135,9 @@ namespace EventBasedTCP
             _stream.Write(data, 0, data.Length);
         }
 
+        /// <summary>
+        /// The thread method where the client listens for new messages and handles them accordingly.
+        /// </summary>
         private void ListenForMessages()
         {
             var bytes = new List<byte>();
@@ -158,6 +194,10 @@ namespace EventBasedTCP
             }
         }
 
+        /// <summary>
+        /// Stops the client from listening, sending an end connection code to the server, and disposing.
+        /// </summary>
+        /// <param name="fromServer"></param>
         public void Dispose(bool fromServer)
         {
             if (!IsDisposed)
@@ -173,8 +213,5 @@ namespace EventBasedTCP
                 Disposed?.Invoke(this, null);
             }
         }
-
-        public static Client FromServerClient(TcpClient serverClient) =>
-            new Client(serverClient);
     }
 }
