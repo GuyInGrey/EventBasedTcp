@@ -12,9 +12,14 @@ namespace EventBasedTCP
         Thread _clientListenerThread;
 
         /// <summary>
-        /// The of all the clients connected to this server.
+        /// A list of all the clients connected to this server.
         /// </summary>
         public List<Client> ConnectedClients { get; set; }
+
+        /// <summary>
+        /// A list of all the responses set up on this server.
+        /// </summary>
+        public List<ResponseEvent> Responses { get; set; }
 
         /// <summary>
         /// The address the server is listening on.
@@ -84,6 +89,7 @@ namespace EventBasedTCP
         private void StartClientListening()
         {
             ConnectedClients = new List<Client>();
+            Responses = new List<ResponseEvent>();
             _clientListenerThread = new Thread(ListenForClients);
             _clientListenerThread.Start();
             StartedListening?.Invoke(this, null);
@@ -145,7 +151,47 @@ namespace EventBasedTCP
             }
             else
             {
-                MessageReceived?.Invoke(sender, e);
+                foreach (var response in Responses)
+                {
+                    var willTrigger = false;
+
+                    switch (response.Mode)
+                    {
+                        case ContentMode.Contains:
+                            if (e.Message.Contains(response.Content))
+                            {
+                                willTrigger = true;
+                            }
+                            break;
+                        case ContentMode.EndsWish:
+                            if (e.Message.EndsWith(response.Content))
+                            {
+                                willTrigger = true;
+                            }
+                            break;
+                        case ContentMode.StartsWith:
+                            if (e.Message.StartsWith(response.Content))
+                            {
+                                willTrigger = true;
+                            }
+                            break;
+                        case ContentMode.Equals:
+                            if (e.Message == response.Content)
+                            {
+                                willTrigger = true;
+                            }
+                            break;
+                    }
+
+                    if (willTrigger)
+                    {
+                        response.Event?.Invoke(e);
+                    }
+                    else
+                    {
+                        MessageReceived?.Invoke(sender, e);
+                    }
+                }
             }
         }
 

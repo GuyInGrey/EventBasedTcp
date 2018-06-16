@@ -40,8 +40,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ResponseEvent.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="ClientConnectedDisconnectedEventArgs.cs" />
+    <Compile Include="ContentMode.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="ITimed.cs" />
     <Compile Include="MessageReceivedEventArgs.cs" />

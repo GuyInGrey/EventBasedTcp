@@ -1,6 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
 using EventBasedTCP;
 
 namespace ConsoleApp1
@@ -17,6 +15,13 @@ namespace ConsoleApp1
             server.ClientConnected += Server_ClientConnected;
             server.MessageReceived += Server_MessageReceived;
             server.ClientDisconnected += Server_ClientDisconnected;
+            var rickroll = new ResponseEvent()
+            {
+                Content = "never gunna give you up",
+                Mode = ContentMode.Contains,
+                Event = Rickroll,
+            };
+            server.Responses.Add(rickroll);
 
             Console.WriteLine("Server started.");
             Console.WriteLine("Listing on IP address: " + server.Address);
@@ -50,6 +55,11 @@ namespace ConsoleApp1
 
                 Console.WriteLine();
             }
+        }
+
+        public static void Rickroll(MessageReceivedEventArgs e)
+        {
+            e.Client.SendMessage("never gunna let you down");
         }
 
         private static void Server_ClientDisconnected(object sender, ClientToggleEventArgs e)
