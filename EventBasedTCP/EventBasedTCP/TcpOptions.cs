@@ -8,7 +8,7 @@ namespace EventBasedTCP
 {
     public static class TcpOptions
     {
-        public static char EndMessageCode { get; set; } = (char)25;
+        public static char EndMessageCode { get; set; } = (char)3;
         public static char EndConnectionCode { get; set; } = (char)4;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
@@ -11,19 +12,47 @@ namespace EventBasedTCP
         NetworkStream _stream => _client.GetStream();
         Thread _listenThread;
 
+        /// <summary>
+        /// Whether the Client has been disconnected and disposed or not.
+        /// </summary>
         public bool IsDisposed { get; private set; }
 
+        /// <summary>
+        /// When a message is received from the server this client is connected to.
+        /// </summary>
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
-        public event EventHandler ServerDisconnected;
+
+        /// <summary>
+        /// When the server stops, disposing the client automatically.
+        /// </summary>
+        public event EventHandler ServerStopped;
+
+        /// <summary>
+        /// When the client is disposed.
+        /// </summary>
         public event EventHandler Disposed;
+
+        /// <summary>
+        /// When the client has begun listening for messages from the server.
+        /// </summary>
         public event EventHandler StartedListening;
 
+        /// <summary>
+        /// Whether this client is a connection client on the server end.
+        /// </summary>
         public bool IsServerClient { get; }
+
+        /// <summary>
+        /// If the instantiation, and inheritly the connection, failed.
+        /// </summary>
         public bool FailedConnect { get; }
 
+        /// <summary>
+        /// The tag attached to this object.
+        /// </summary>
         public object Tag { get; set; }
-
-        public string ConnectAddress => _client.Client.RemoteEndPoint.ToString();
+        
+        public string ConnectAddress => IPAddress.Parse(((IPEndPoint)_client.Client.RemoteEndPoint).Address.ToString()).ToString();
 
         private Client(TcpClient client)
         {
@@ -83,6 +112,10 @@ namespace EventBasedTCP
                         break;
                     }
                 }
+                catch
+                {
+                    break;
+                }
 
                 if (i == -1)
                 {
@@ -93,13 +126,19 @@ namespace EventBasedTCP
                     if (bytes.Count > 0)
                     {
                         var message = bytes.ToArray().GetString();
-                        MessageReceived?.Invoke(this, new MessageReceivedEventArgs(message));
+                        var eventargs = new MessageReceivedEventArgs
+                        {
+                            Message = message,
+                            Time = DateTime.Now,
+                            Client = this
+                        };
+                        MessageReceived?.Invoke(this, eventargs);
                         bytes.Clear();
                     }
                 }
                 else if (i == TcpOptions.EndConnectionCode && !IsServerClient)
                 {
-                    ServerDisconnected?.Invoke(this, null);
+                    ServerStopped?.Invoke(this, null);
                     Dispose(true);
                     break;
                 }

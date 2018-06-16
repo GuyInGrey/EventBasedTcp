@@ -2,20 +2,16 @@
 
 namespace EventBasedTCP
 {
-    public class ClientToggleEventArgs : EventArgs
+    public class ClientToggleEventArgs : EventArgs, ITimed
     {
+        /// <summary>
+        /// The time the event happened.
+        /// </summary>
+        public DateTime Time { get; set; }
+
+        /// <summary>
+        /// The Client that connected.
+        /// </summary>
         public Client ConnectedClient { get; set; }
-        public DateTime TimeConnected { get; set; }
-
-        public ClientToggleEventArgs(Client client) : this(client, DateTime.Now)
-        {
-
-        }
-
-        public ClientToggleEventArgs(Client client, DateTime timeConnected)
-        {
-            ConnectedClient = client;
-            TimeConnected = timeConnected;
-        }
     }
 }

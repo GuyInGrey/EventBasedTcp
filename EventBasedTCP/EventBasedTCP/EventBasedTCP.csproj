@@ -43,6 +43,7 @@
     <Compile Include="Client.cs" />
     <Compile Include="ClientConnectedDisconnectedEventArgs.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="ITimed.cs" />
     <Compile Include="MessageReceivedEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server.cs" />

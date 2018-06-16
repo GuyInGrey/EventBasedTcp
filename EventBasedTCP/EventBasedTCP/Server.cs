@@ -56,7 +56,12 @@ namespace EventBasedTCP
                     connectedClient.MessageReceived += ConnectedClient_MessageReceived;
 
                     ConnectedClients.Add(connectedClient);
-                    ClientConnected?.Invoke(this, new ClientToggleEventArgs(connectedClient));
+                    var eventargs = new ClientToggleEventArgs
+                    {
+                        ConnectedClient = connectedClient,
+                        Time = DateTime.Now
+                    };
+                    ClientConnected?.Invoke(this, eventargs);
                 }
                 catch (SocketException e)
                 {
@@ -77,7 +82,12 @@ namespace EventBasedTCP
             if (e.Message == TcpOptions.EndConnectionCode.ToString())
             {
                 ConnectedClients.Remove(sender as Client);
-                ClientDisconnected?.Invoke(this, new ClientToggleEventArgs(sender as Client));
+                var eventargs = new ClientToggleEventArgs
+                {
+                    ConnectedClient = sender as Client,
+                    Time = DateTime.Now
+                };
+                ClientDisconnected?.Invoke(this, eventargs);
             }
             else
             {
@@ -99,6 +109,19 @@ namespace EventBasedTCP
                 _listener.Stop();
                 Disposed?.Invoke(this, null);
             }
+        }
+
+        public static string GetLocalIPAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    return ip.ToString();
+                }
+            }
+            throw new Exception("No network adapters with an IPv4 address in the system!");
         }
     }
 }

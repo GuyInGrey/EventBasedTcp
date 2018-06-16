@@ -12,13 +12,14 @@ namespace ChatClient
         {
             failedToConnect:;
 
-            Console.WriteLine("Enter the IP address to connect to: ");
+            Console.Write("Enter the IP address to connect to:\n> ");
             var ip = Console.ReadLine();
 
             invalidPort:;
 
-            Console.WriteLine("Enter the port to connect to: ");
+            Console.Write("Enter the port to connect to:\n> ");
             var portString = Console.ReadLine();
+            Console.WriteLine();
 
             if (int.TryParse(portString, out var port))
             {
@@ -35,15 +36,16 @@ namespace ChatClient
 
                     while (!client.IsDisposed)
                     {
+                        Console.Write("> ");
                         var input = Console.ReadLine();
                         
                         if (input.ToLower().StartsWith("send "))
                         {
                             var toSend = input.Substring(5, input.Length - 5);
 
-                            Console.WriteLine("Sending message: " + toSend);
+                            Console.WriteLine("Sending message: \n     " + toSend + "\n");
                             client.SendMessage(toSend);
-                            Console.WriteLine("Sent.");
+                            Console.WriteLine("Sent message.");
                         }
                         else if (input.ToLower() == "stop")
                         {
@@ -52,6 +54,8 @@ namespace ChatClient
                             Console.WriteLine("Disconnected. Press any key to continue.");
                             Console.ReadLine();
                         }
+
+                        Console.WriteLine();
                     }
                 }
                 catch (Exception e)

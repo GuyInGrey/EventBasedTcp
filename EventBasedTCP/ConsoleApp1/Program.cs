@@ -13,7 +13,7 @@ namespace ConsoleApp1
         {
             Console.WriteLine("Initializing Server...");
 
-            server = new Server("127.0.0.1", 13001);
+            server = new Server(Server.GetLocalIPAddress(), 13001);
             server.ClientConnected += Server_ClientConnected;
             server.MessageReceived += Server_MessageReceived;
             server.ClientDisconnected += Server_ClientDisconnected;
@@ -24,17 +24,18 @@ namespace ConsoleApp1
 
             while (!server.IsDisposed)
             {
+                Console.Write("> ");
                 var input = Console.ReadLine();
 
                 switch (input)
                 {
                     case "listclients":
-                        Console.WriteLine($"\n{0} Clients Connected\n-----------------------", server.ConnectedClients.Count);
+                        Console.WriteLine(server.ConnectedClients.Count + " Client(s) Connected\n-----------------------");
                         foreach (var client in server.ConnectedClients)
                         {
                             Console.WriteLine(client.ConnectAddress);
                         }
-                        Console.WriteLine("-----------------------\n");
+                        Console.WriteLine("-----------------------");
                         break;
                     case "stop":
                         Console.WriteLine("Disposing Server...");
@@ -46,6 +47,8 @@ namespace ConsoleApp1
                         Console.WriteLine("Invalid Command: " + input);
                         break;
                 }
+
+                Console.WriteLine();
             }
         }
 
@@ -56,11 +59,12 @@ namespace ConsoleApp1
 
         private static void Server_MessageReceived(object sender, MessageReceivedEventArgs e)
         {
-            Console.WriteLine("Received Message: " + (sender as Client).ConnectAddress + " : " + e.Message);
+            Console.WriteLine("Received Message: " + e.Client.ConnectAddress + " : " + e.Message);
+
             var toRespond = Reverse(e.Message);
 
             Console.WriteLine("Returning Message: " + toRespond);
-            (sender as Client).SendMessage(toRespond);
+            e.Client.SendMessage(toRespond);
         }
 
         public static string Reverse(string s)
