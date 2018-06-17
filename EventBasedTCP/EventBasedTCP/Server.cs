@@ -57,9 +57,14 @@ namespace EventBasedTCP
         public event EventHandler Disposed;
 
         /// <summary>
-        /// Occurs after the server begins listening for clients. At this point, the ConnectedClients list is safe to use.
+        /// Whether the client is listening or not.
         /// </summary>
-        public event EventHandler StartedListening;
+        public bool HasStartedListening { get; private set; }
+
+        /// <summary>
+        /// If it's listening and has not been disposed.
+        /// </summary>
+        public bool IsReady => HasStartedListening && !IsDisposed;
 
         /// <summary>
         /// The tag attached to this object.
@@ -92,7 +97,7 @@ namespace EventBasedTCP
             Responses = new List<ResponseEvent>();
             _clientListenerThread = new Thread(ListenForClients);
             _clientListenerThread.Start();
-            StartedListening?.Invoke(this, null);
+            HasStartedListening = true;
         }
 
         /// <summary>
