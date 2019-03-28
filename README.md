@@ -7,10 +7,6 @@ Being event based makes this library easy to use, and with it's AutoResponse cap
 
 If you would like to help out with the project, please clone the repository to your computer, make the modifications, make commits with meaningful names which including the changes, and submit a pull request with a meaningful name. The discussion will happen from there on the PR page.
 
-## Contributers
-
-* **Noah Heber** - *Initial work* - [GuyInGrey](https://github.com/GuyInGrey)
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
