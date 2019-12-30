@@ -10,9 +10,3 @@ If you would like to help out with the project, please clone the repository to y
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Stack Overflow
-* My Dad
-* ~~My~~ Your Mom
